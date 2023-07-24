@@ -1,0 +1,42 @@
+.gradle
+gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+.idea/inspectionProfiles/
+.idea/kotlinc.xml
+.idea/misc.xml
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Mac OS ###
+.DS_Store
+
+# Target directory #
+*logs/**
+*target/**
+*.idea/**
+*.gradle/**
+*build/**
+*out/**
+*classes/**
+*javadoc/**
+docs/build/**
+*/*logs/**
+*/*target/**
+*/*.idea/**
+*/*.gradle/**
+*/*build/**
+bin/
