@@ -1,3 +1,5 @@
+package io.github.klox
+
 enum class TokenType {
     // Single-character tokens.
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
