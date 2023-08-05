@@ -20,7 +20,7 @@ class GenerateAst {
                 "Call     : Expr callee, Token paren, List<Expr> arguments",
                 "Get      : Expr obj, Token name",
                 "Grouping : Expr expression",
-                "Literal  : Object value",
+                "Literal  : Any? value",
                 "Logical  : Expr left, Token operator, Expr right",
                 "Set      : Expr obj, Token name, Expr value",
                 "Super    : Token keyword, Token method",
