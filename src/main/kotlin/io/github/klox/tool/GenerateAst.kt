@@ -1,6 +1,7 @@
 package io.github.klox.tool
 
 import java.io.PrintWriter
+import java.util.*
 import kotlin.system.exitProcess
 
 class GenerateAst {
@@ -49,7 +50,8 @@ class GenerateAst {
             writer.println("package io.github.klox")
             writer.println()
             writer.println()
-            writer.println("sealed class $baseName {")
+            writer.println("abstract class $baseName {")
+            defineVisitor(writer, baseName, types)
 
             // The AST classes.
             for (type in types) {
@@ -62,13 +64,29 @@ class GenerateAst {
             writer.close()
         }
 
+        private fun defineVisitor(writer: PrintWriter, baseName: String, types: List<String>) {
+            writer.println("    interface Visitor<R> {")
+
+            for (type in types) {
+                val typeName = type.split(":")[0].trim();
+                writer.println("        fun visit$typeName$baseName(${baseName.lowercase(Locale.getDefault())}: $typeName): R")
+            }
+            writer.println("    }")
+            writer.println("    abstract fun <R> accept(visitor: Visitor<R>): R")
+        }
+
         private fun defineType(writer: PrintWriter, baseName: String, className: String, fields: List<String>) {
             writer.println(
                 "    class $className"
                 + "(${fields.map { it.trim().split(" ").reversed().joinToString(": ") }
                     .map { "val $it" }.reduce { acc, field -> "$acc, $field" }})"
-                + " : " + baseName + " ()"
+                + " : $baseName() {"
             )
+
+            writer.println("        override fun <R> accept(visitor: Visitor<R>): R {")
+            writer.println("            return visitor.visit$className$baseName(this)")
+            writer.println("        }")
+            writer.println("    }")
         }
     }
 }

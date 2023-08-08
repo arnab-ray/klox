@@ -2,9 +2,9 @@ package io.github.klox
 
 class AstPrinter {
 
-    fun print(expr: Expr): String {
+    fun print(expr: Expr?): String {
         val builder = StringBuilder()
-        traverseAst(builder, expr)
+        expr?.let { traverseAst(builder, expr) }
 
         return builder.toString()
     }
