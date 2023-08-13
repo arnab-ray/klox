@@ -131,7 +131,15 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
     }
 
     override fun visitLogicalExpr(expr: Expr.Logical): Any? {
-        TODO("Not yet implemented")
+        val left = evaluate(expr.left)
+
+        if (expr.operator.type == TokenType.OR) {
+            if (isTruthy(left)) return left
+        } else {
+            if (!isTruthy(left)) return left
+        }
+
+        return evaluate(expr.right)
     }
 
     override fun visitSetExpr(expr: Expr.Set): Any? {
@@ -170,7 +178,7 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
         }
     }
 
-    override fun visitVariableExpr(expr: Expr.Variable): Any? {
+    override fun visitVariableExpr(expr: Expr.Variable): Any {
         return environment.get(expr.name)
     }
 
@@ -216,7 +224,13 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
     }
 
     override fun visitIfStmt(stmt: Stmt.If): Any? {
-        TODO("Not yet implemented")
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch)
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch)
+        }
+
+        return null
     }
 
     override fun visitBreakStmt(stmt: Stmt.Break): Any? {

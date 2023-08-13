@@ -10,14 +10,10 @@ class Environment(private val enclosing: Environment? = null) {
         values[name] = value
     }
 
-    fun get(name: Token): Any? {
-        if (values.containsKey(name.lexeme)) {
-            return values[name.lexeme]
-        }
-
-        if (enclosing != null) return enclosing.get(name)
-
-        throw RunTimeError(name, "Undefined variable ${name.lexeme}.")
+    fun get(name: Token): Any {
+        return if (values.containsKey(name.lexeme)) {
+            values[name.lexeme] ?: throw RunTimeError(name, "Uninitialized variable ${name.lexeme}.")
+        } else enclosing?.get(name) ?: throw RunTimeError(name, "Undefined variable ${name.lexeme}.")
     }
 
     fun assign(name: Token, value: Any?) {

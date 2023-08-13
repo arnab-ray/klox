@@ -47,7 +47,7 @@ abstract class Stmt {
         }
     }
 
-    class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt) : Stmt() {
+    class If(val condition: Expr, val thenBranch: Stmt, val elseBranch: Stmt?) : Stmt() {
         override fun <R> accept(visitor: Visitor<R>): R {
             return visitor.visitIfStmt(this)
         }
