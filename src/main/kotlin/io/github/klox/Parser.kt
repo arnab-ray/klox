@@ -36,15 +36,49 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun statement(): Stmt {
-        return if (match(TokenType.IF)) {
+        return if (match(TokenType.FOR)) {
+            forStatement()
+        } else if (match(TokenType.IF)) {
             ifStatement()
         } else if (match(TokenType.PRINT)) {
             printStatement()
+        } else if (match(TokenType.WHILE)) {
+            whileStatement()
         } else if (match(TokenType.LEFT_BRACE)) {
             Stmt.Block(block())
         } else {
             expressionStatement()
         }
+    }
+
+    private fun forStatement(): Stmt {
+        consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
+
+        val initializer = if (match(TokenType.SEMICOLON)) {
+            null
+        } else if (match(TokenType.VAR)) {
+            varDeclaration()
+        } else {
+            expressionStatement()
+        }
+
+        var condition = if (!check(TokenType.SEMICOLON)) expression() else null
+        consume(TokenType.SEMICOLON, "Expect ';' after loop condition.")
+
+        val increment = if (!check(TokenType.RIGHT_PAREN)) expression() else null
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after 'for' clauses.")
+
+        var body = statement()
+
+        if (increment != null) body = Stmt.Block(listOf(body, Stmt.Expression(increment)))
+        if (condition == null) condition = Expr.Literal(true)
+        body = Stmt.While(condition, body)
+
+        if (initializer != null) {
+            body = Stmt.Block(listOf(initializer, body))
+        }
+
+        return body
     }
 
     private fun ifStatement(): Stmt {
@@ -62,6 +96,15 @@ class Parser(private val tokens: List<Token>) {
         val value = expression()
         consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Stmt.Print(value)
+    }
+
+    private fun whileStatement(): Stmt {
+        consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.")
+        val condition = expression()
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.")
+        val body = statement()
+
+        return Stmt.While(condition, body)
     }
 
     private fun block(): List<Stmt?> {

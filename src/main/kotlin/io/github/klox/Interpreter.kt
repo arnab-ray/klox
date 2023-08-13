@@ -249,6 +249,10 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
     }
 
     override fun visitWhileStmt(stmt: Stmt.While): Any? {
-        TODO("Not yet implemented")
+        while (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body)
+        }
+
+        return null
     }
 }
