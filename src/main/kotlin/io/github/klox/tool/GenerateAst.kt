@@ -31,14 +31,15 @@ class GenerateAst {
             ))
 
             defineAst(outputDir, "Stmt", listOf(
-                "Block      : List<Stmt> statements",
+                "Block      : List<Stmt?> statements",
                 "Class      : Token name, Expr.Variable superclass, List<Stmt.Function> methods",
                 "Expression : Expr expression",
+                "Print      : Expr expression",
                 "Function   : Token name, List<Token> params, List<Stmt> body",
                 "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
                 "Break      : Token keyword",
-                "Return     : Token keyword, Expr value",
-                "Var        : Token name, Expr initializer",
+                "Return     : Token keyword, Expr? value",
+                "Var        : Token name, Expr? initializer",
                 "While      : Expr condition, Stmt body"
             ))
         }
@@ -72,7 +73,9 @@ class GenerateAst {
                 writer.println("        fun visit$typeName$baseName(${baseName.lowercase(Locale.getDefault())}: $typeName): R")
             }
             writer.println("    }")
+            writer.println()
             writer.println("    abstract fun <R> accept(visitor: Visitor<R>): R")
+            writer.println()
         }
 
         private fun defineType(writer: PrintWriter, baseName: String, className: String, fields: List<String>) {
@@ -87,6 +90,7 @@ class GenerateAst {
             writer.println("            return visitor.visit$className$baseName(this)")
             writer.println("        }")
             writer.println("    }")
+            writer.println()
         }
     }
 }

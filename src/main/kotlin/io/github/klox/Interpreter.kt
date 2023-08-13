@@ -3,16 +3,21 @@ package io.github.klox
 import Klox
 import io.github.klox.errors.RunTimeError
 
-class Interpreter : Expr.Visitor<Any?> {
-    fun interpret(expression: Expr?) {
-        expression?.let {
-            try {
-                val value = evaluate(expression)
-                println(stringify(value))
-            } catch (error: RunTimeError) {
-                Klox.runtimeError(error)
+class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
+    private var environment = Environment()
+
+    fun interpret(statements: List<Stmt?>) {
+        try {
+            for (statement in statements) {
+                execute(statement)
             }
+        } catch (error: RunTimeError) {
+            Klox.runtimeError(error)
         }
+    }
+
+    private fun execute(statement: Stmt?) {
+        statement?.accept(this)
     }
 
     private fun stringify(obj: Any?): String {
@@ -27,7 +32,9 @@ class Interpreter : Expr.Visitor<Any?> {
     }
 
     override fun visitAssignExpr(expr: Expr.Assign): Any? {
-        TODO("Not yet implemented")
+        val value = evaluate(expr.value)
+        environment.assign(expr.name, value)
+        return value
     }
 
     override fun visitBinaryExpr(expr: Expr.Binary): Any? {
@@ -59,8 +66,7 @@ class Interpreter : Expr.Visitor<Any?> {
             TokenType.PLUS -> {
                 if (left is Double && right is Double) {
                     left + right
-                }
-                if (left is String && right is String) {
+                } else if (left is String && right is String) {
                     left + right
                 } else {
                     throw RunTimeError(expr.operator, "Operands must be two numbers or two strings")
@@ -165,10 +171,70 @@ class Interpreter : Expr.Visitor<Any?> {
     }
 
     override fun visitVariableExpr(expr: Expr.Variable): Any? {
-        TODO("Not yet implemented")
+        return environment.get(expr.name)
     }
 
     private fun evaluate(expr: Expr): Any? {
         return expr.accept(this)
+    }
+
+    override fun visitBlockStmt(stmt: Stmt.Block): Any? {
+        executeBlock(stmt.statements, Environment(environment))
+        return null
+    }
+
+    private fun executeBlock(statements: List<Stmt?>, environment: Environment) {
+        val previous = this.environment
+
+        try {
+            this.environment = environment
+
+            for (statement in statements)
+                execute(statement)
+        } finally {
+            this.environment = previous
+        }
+    }
+
+    override fun visitClassStmt(stmt: Stmt.Class): Any? {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitExpressionStmt(stmt: Stmt.Expression): Any? {
+        evaluate(stmt.expression)
+        return null
+    }
+
+    override fun visitPrintStmt(stmt: Stmt.Print): Any? {
+        val value = evaluate(stmt.expression)
+        println(stringify(value))
+        return null
+    }
+
+    override fun visitFunctionStmt(stmt: Stmt.Function): Any? {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitIfStmt(stmt: Stmt.If): Any? {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitBreakStmt(stmt: Stmt.Break): Any? {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitReturnStmt(stmt: Stmt.Return): Any? {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitVarStmt(stmt: Stmt.Var): Any? {
+        val value = if (stmt.initializer != null) evaluate(stmt.initializer) else null
+
+        environment.define(stmt.name.lexeme, value)
+        return null
+    }
+
+    override fun visitWhileStmt(stmt: Stmt.While): Any? {
+        TODO("Not yet implemented")
     }
 }

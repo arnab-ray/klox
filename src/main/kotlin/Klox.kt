@@ -64,16 +64,17 @@ class Klox {
             val scanner = Scanner(source)
             val tokens = scanner.scanTokens()
 
-            for (token in tokens) {
-                println(token)
-            }
+//            for (token in tokens) {
+//                println(token)
+//            }
 
             val parser = Parser(tokens)
-            val expression = parser.parse()
+            val statements = parser.parse()
 
             if (hadError) return
-            println(AstPrinter().print(expression))
-            interpreter.interpret(expression)
+
+            //println(AstPrinter().print(expression))
+            interpreter.interpret(statements)
         }
         
         fun error(line: Int, message: String) {
