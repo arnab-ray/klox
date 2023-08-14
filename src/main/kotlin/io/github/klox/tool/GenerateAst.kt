@@ -35,7 +35,7 @@ class GenerateAst {
                 "Class      : Token name, Expr.Variable superclass, List<Stmt.Function> methods",
                 "Expression : Expr expression",
                 "Print      : Expr expression",
-                "Function   : Token name, List<Token> params, List<Stmt> body",
+                "Function   : Token name, List<Token> params, List<Stmt?> body",
                 "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",
                 "Break      : Token keyword",
                 "Return     : Token keyword, Expr? value",

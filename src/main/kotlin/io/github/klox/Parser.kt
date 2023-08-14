@@ -19,11 +19,36 @@ class Parser(private val tokens: List<Token>) {
 
     private fun declaration(): Stmt? {
         return try {
-            if (match(TokenType.VAR)) varDeclaration() else statement()
+            if (match(TokenType.FUN)) {
+                function("function")
+            } else if (match(TokenType.VAR)) {
+                varDeclaration()
+            } else {
+                statement()
+            }
         } catch (error: ParseError) {
             synchronize()
             null
         }
+    }
+
+    private fun function(kind: String): Stmt.Function {
+        val name = consume(TokenType.IDENTIFIER, "Expect $kind name.")
+        consume(TokenType.LEFT_PAREN, "Expect '(' after $kind name.")
+        val parameters = mutableListOf<Token>()
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (parameters.size >= 255) {
+                    error(peek(), "Can't have more than 255 arguments.")
+                }
+                parameters.add(consume(TokenType.IDENTIFIER, "Expect parameter name."))
+            } while (match(TokenType.COMMA))
+        }
+        consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.")
+
+        consume(TokenType.LEFT_BRACE, "Expect '{' before $kind body.")
+        val body = block()
+        return Stmt.Function(name, parameters, body)
     }
 
     private fun varDeclaration(): Stmt {
@@ -257,7 +282,36 @@ class Parser(private val tokens: List<Token>) {
             return Expr.Unary(operator, right)
         }
 
-        return primary()
+        return call()
+    }
+
+    private fun finishCall(callee: Expr): Expr {
+        val arguments = mutableListOf<Expr>()
+        if (!check(TokenType.RIGHT_PAREN)) {
+            do {
+                if (arguments.size >= 255) {
+                    error(peek(), "Can't have more than 255 arguments.")
+                }
+                arguments.add(expression())
+            } while (match(TokenType.COMMA))
+        }
+
+        val paren = consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+        return Expr.Call(callee, paren, arguments)
+    }
+
+    private fun call(): Expr {
+        var expr = primary()
+
+        while (true) {
+            if (match(TokenType.LEFT_PAREN)) {
+                expr = finishCall(expr)
+            } else {
+                break
+            }
+        }
+
+        return expr
     }
 
     private fun primary(): Expr {

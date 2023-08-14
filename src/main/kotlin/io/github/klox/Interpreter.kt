@@ -4,7 +4,27 @@ import Klox
 import io.github.klox.errors.RunTimeError
 
 class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
-    private var environment = Environment()
+    val globals = Environment()
+    private var environment = globals
+
+    init {
+        globals.define(
+            "clock",
+            object : KloxCallable {
+                override fun arity(): Int {
+                    return 0
+                }
+
+                override fun call(interpreter: Interpreter, arguments: List<Any>): Any {
+                    return System.currentTimeMillis().toDouble() / 1000.0
+                }
+
+                override fun toString(): String {
+                    return "<native fn>"
+                }
+            }
+        )
+    }
 
     fun interpret(statements: List<Stmt?>) {
         try {
@@ -115,7 +135,17 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
     }
 
     override fun visitCallExpr(expr: Expr.Call): Any? {
-        TODO("Not yet implemented")
+        val callee = evaluate(expr.callee)
+
+        val arguments = expr.arguments.mapNotNull { evaluate(it) }
+
+        if (callee !is KloxCallable) {
+            throw RunTimeError(expr.paren, "Can only call functions and classes.")
+        }
+        if (arguments.size != callee.arity()) {
+            throw RunTimeError(expr.paren, "Expected ${callee.arity()} arguments but got ${arguments.size}.")
+        }
+        return callee.call(this, arguments)
     }
 
     override fun visitGetExpr(expr: Expr.Get): Any? {
@@ -191,7 +221,7 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
         return null
     }
 
-    private fun executeBlock(statements: List<Stmt?>, environment: Environment) {
+    fun executeBlock(statements: List<Stmt?>, environment: Environment) {
         val previous = this.environment
 
         try {
@@ -220,7 +250,9 @@ class Interpreter : Expr.Visitor<Any?>, Stmt.Visitor<Any?> {
     }
 
     override fun visitFunctionStmt(stmt: Stmt.Function): Any? {
-        TODO("Not yet implemented")
+        val function = Kloxfunction(stmt)
+        environment.define(stmt.name.lexeme, function)
+        return null
     }
 
     override fun visitIfStmt(stmt: Stmt.If): Any? {
